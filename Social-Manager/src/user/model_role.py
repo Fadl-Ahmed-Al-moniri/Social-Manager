@@ -12,7 +12,7 @@ class Role(models.Model):
     description = models.TextField(blank=True, null=True)
 
     def __str__(self):
-        return self.name
+        return fr"id:{self.pk},name:{self.name}"
 
 
 class Permission(models.Model):

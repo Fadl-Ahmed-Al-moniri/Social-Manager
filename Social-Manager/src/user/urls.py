@@ -4,14 +4,13 @@ from .views import EmpUserViewSet, UserAccountViewSet ,AuthViewSet ,PasswordRese
 
 router = DefaultRouter()
 router.register(r'auth', AuthViewSet, basename='auth')
+router.register(r'info', UserAccountViewSet, basename='info')
 router.register(r'emp', EmpUserViewSet, basename='employee')
 
-user_list = UserAccountViewSet.as_view({'get': 'getUserData', 'post': 'updateUserData'})
 
 
 urlpatterns = [
     path('', include(router.urls)),
-    path('user-info/',user_list ,name= 'user-data'),
     path('verify-email/<uidb64>/<token>/', verify_email, name='verify_email'),
     path('password-reset/', PasswordResetRequestView.as_view(), name='password_reset'),
     path('password-reset-confirm/<uidb64>/<token>/', PasswordResetConfirmView.as_view(), name='password_reset_confirm'),

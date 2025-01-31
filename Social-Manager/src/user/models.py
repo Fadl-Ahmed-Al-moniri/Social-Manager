@@ -21,6 +21,10 @@ class CustomUserManager(BaseUserManager):
 
 class UserModel(AbstractBaseUser, PermissionsMixin):
 
+    def get_default_role():
+        return Role.objects.get(name= "Social Media Owner").pk
+
+
     username = models.CharField(max_length=255,)
     email = models.EmailField(unique=True)
     is_active = models.BooleanField(default=True)
@@ -28,9 +32,11 @@ class UserModel(AbstractBaseUser, PermissionsMixin):
     email_verified = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    role = models.ForeignKey(Role, on_delete=models.SET_NULL, related_name='users',null=True, blank=True,)
+    role = models.ForeignKey(Role, on_delete=models.SET_NULL, related_name='users', default=get_default_role,null=True, blank=True,)
     manager = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True, related_name='employees')
     objects = CustomUserManager()
+
+
 
 
     USERNAME_FIELD = 'email'

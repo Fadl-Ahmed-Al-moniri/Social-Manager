@@ -1,7 +1,8 @@
 from rest_framework import viewsets, status,generics ,decorators
 from rest_framework.response import Response
+from .model_role import Role    
 from rest_framework.authtoken.models import Token 
-from .permissions import EmailVerifiedPermission , IsOwner , HasPermissionEmployee
+from .permissions import EmailVerifiedPermission , IsOwner ,ISManager, HasPermissionEmployee ,HasPermissionEmployeeToAccess
 from .models import UserModel
 from .serializers import EmpManagerSerializer, UserSerializer, LoginSerializer ,Roleserializers  
 from rest_framework.authentication import TokenAuthentication
@@ -20,8 +21,17 @@ class AuthViewSet(viewsets.ViewSet):
     """
 
     authentication_classes = [TokenAuthentication]
+
+    permission_classes_by_action = {
+        'login': [EmailVerifiedPermission],
+    }
+    def get_permissions(self):
+        try:
+            return [permission() for permission in self.permission_classes_by_action[self.action]]
+        except KeyError:
+            return [permission() for permission in self.permission_classes]
+
     @decorators.action(detail=False, methods=["post"])
-    @decorators.permission_classes([EmailVerifiedPermission])
     def login(self, request):
         try:
             serializer = LoginSerializer(data=request.data)
@@ -32,19 +42,18 @@ class AuthViewSet(viewsets.ViewSet):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         except   PermissionError as e:
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
-
     def create(self, request):
-        
         serializer = UserSerializer(data=request.data)
-        if serializer.validate_create(request.data):
+        if serializer.is_valid():
             user = serializer.save()
             token, created = Token.objects.get_or_create(user=user)
             send_massage_email(user=user,reverse_viewname='verify_email',title='Verify your email address',content="Please verify your email by clicking the link")
             response = {
                 "message":"Please verify your email by clicking the link below"
             }
-            return Response(response, status=status.HTTP_201_CREATED)
+            return Response(response, status=status.HTTP_201_CREATED,)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 @decorators.api_view(http_method_names=["GET"])
 def verify_email(request, uidb64, token):
     """
@@ -65,7 +74,6 @@ def verify_email(request, uidb64, token):
         - On failure: {"message": "Invalid verification link."} or 
     {"message": "Invalid or expired verification link."} with status 400.
     """
-
     try:
         
         uid = urlsafe_base64_decode(uidb64).decode()
@@ -79,16 +87,15 @@ def verify_email(request, uidb64, token):
     else:
         return Response({"message": "Invalid or expired verification link."}, status=status.HTTP_400_BAD_REQUEST)
 
-
 class UserAccountViewSet(viewsets.ViewSet):
     """
     ViewSet for user account related operations.
     """
     serializer_class = UserSerializer
     authentication_classes = [TokenAuthentication]
-    permission_classes = [IsOwner]
+    permission_classes = [IsOwner , ISManager]
 
-    @decorators.action(detail=False, methods=["get"])
+    @decorators.action(detail=False, methods=["get"], url_path="get")
     def getUserData(self, request):
         userinfo =  get_user_from_token(request)
         if userinfo is not None:
@@ -96,11 +103,11 @@ class UserAccountViewSet(viewsets.ViewSet):
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response({"message": "Invalid authorization header"}, status=status.HTTP_400_BAD_REQUEST)
 
-
+    @decorators.action(detail=False, methods=["post"], url_path="update")
     def updateUserData(self, request):
         userinfo =  get_user_from_token(request)
         if userinfo is not None:
-            serializer = self.serializer_class(userinfo, data=request.data, partial=True)
+            serializer = self.serializer_class(userinfo,context={'request': request, 'view_action': 'update'}, data=request.data, partial=True)
             if serializer.is_valid():
                 serializer.save()
                 return Response(serializer.data, status=status.HTTP_200_OK)
@@ -115,9 +122,9 @@ class EmpUserViewSet(viewsets.ViewSet):
     permission_classes_by_action = {
         'create_emp_user': [HasPermissionEmployee],
         'update_user_data': [IsOwner],
-        'update_user_data_advance': [HasPermissionEmployee],
-        'deactivate_emp_user': [HasPermissionEmployee],
-        'activate_emp_user': [HasPermissionEmployee],
+        'update_user_data_advance': [HasPermissionEmployee,HasPermissionEmployeeToAccess],
+        'deactivate_emp_user': [HasPermissionEmployee,HasPermissionEmployeeToAccess],
+        'activate_emp_user': [HasPermissionEmployee,HasPermissionEmployeeToAccess],
     }
     def get_permissions(self):
         try:
@@ -167,12 +174,12 @@ class EmpUserViewSet(viewsets.ViewSet):
         manager_info = get_user_from_token(request)
         if not manager_info:
             return Response({"message": "Invalid authorization header"}, status=status.HTTP_400_BAD_REQUEST)
-        serializer = EmpManagerSerializer(manager_info,context={'request': request, 'view_action': 'update-advance'},data=request.data, partial=True)
+        userinfo = get_object_or_404(UserModel, email=request.data.get("email"))
+        serializer = EmpManagerSerializer(userinfo,data = request.data,context={'request': request, 'view_action': 'update-advance'}, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
     @decorators.action(detail=False, methods=["get"], url_path="info")
     def get_info(self, request):
         userinfo =  get_user_from_token(request)
@@ -199,17 +206,12 @@ class EmpUserViewSet(viewsets.ViewSet):
         """
         Helper method to activate or deactivate an employee account.
         """
-        manager = get_user_from_token(request)
-        if not manager:
-            return Response({"message": "Invalid authorization header"}, status=status.HTTP_400_BAD_REQUEST)
 
         emp_email = request.data.get("email")
         if not emp_email:
             return Response({"message": "Email is required"}, status=status.HTTP_400_BAD_REQUEST)
 
         emp_model = get_object_or_404(UserModel, email=emp_email)
-        if emp_model.manager != manager:
-            return Response({"message": "You don't have access permission to this account"}, status=status.HTTP_403_FORBIDDEN)
 
         emp_model.is_active = is_active
         emp_model.save()

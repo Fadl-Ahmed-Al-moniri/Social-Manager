@@ -23,6 +23,8 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ['username', 'email','password','role','manager','created_at' ,'updated_at', ]
         extra_kwargs = {
             'email': {'read_only': True}, 
+            'role': {'read_only': True}, 
+            'manager': {'read_only': True}, 
             'password': {'write_only': True},
             'created_at': {'read_only': True}, 
             'updated_at': {'read_only': True},
@@ -39,19 +41,29 @@ class UserSerializer(serializers.ModelSerializer):
         email = attrs.get("email")
         if UserModel.objects.filter(email=email).exists():
             raise ValidationError({"email": "the email already exists please try another email"})
-        return super().validate(attrs) and UserSerializer.is_valid(self,raise_exception=True)
+        return attrs and UserSerializer.is_valid(self,raise_exception=True)
 
+
+    def validate(self, attrs):
+        """
+        this validate serializers for check the input if the user already exists
+        """
+        view_action = self.context.get('view_action')
+        if view_action == "update":
+            return attrs
+        email = attrs.get("email")
+        if UserModel.objects.filter(email=email).exists():
+            raise ValidationError({"email": "the email already exists please try another email"})
+        return super().validate(attrs)
+    
     def create(self, validated_data):
         user = UserModel(**validated_data)
         user.set_password(validated_data['password'])
         user.save()
         return user
 
-    def update(self, instance, validated_data):
-        email  =validated_data.get("email",instance.email)
-        if email :
-            instance.email = validated_data.get("email",instance.email)
 
+    def update(self, instance, validated_data):
         instance.username  =validated_data.get("username",instance.username)
         password = validated_data.get('password', None)
         if password :
@@ -148,7 +160,7 @@ class EmpManagerSerializer(serializers.ModelSerializer):
 
         if view_action =="create":
             email = attrs.get("email")
-            if UserModel.objects.filter(email=email).exists() :
+            if  UserModel.objects.filter(email=email).exists() :
                 raise ValidationError({"message": "The email already exists, please try another email."})
             manager = attrs.get("manager")
             if manager:
@@ -171,7 +183,7 @@ class EmpManagerSerializer(serializers.ModelSerializer):
                 if field not in allowed_fields:
                     raise ValidationError({field: f"Updating {field} is not allowed."})
 
-        if view_action =="update-advance" : 
+        if view_action =="update-advance" :
             email = attrs.get("email")
             username = attrs.get("username")
             password = attrs.get("password")
@@ -207,7 +219,6 @@ class EmpManagerSerializer(serializers.ModelSerializer):
         instance.username = validated_data.get("username", instance.username)
         password = validated_data.get('password', None)
         roleID =validated_data.get("role", None)
-
         if roleID :
             print(roleID)
             roleinstance = Role.objects.get(pk= roleID)
@@ -216,8 +227,6 @@ class EmpManagerSerializer(serializers.ModelSerializer):
             instance.set_password(password)
         instance.save()
         return instance
-
-
 
 class UpdateEmpData(serializers.ModelSerializer):
     
@@ -274,14 +283,13 @@ class UpdateEmpData(serializers.ModelSerializer):
 class PasswordResetSerializer(serializers.Serializer):
     email = serializers.EmailField()
     def validate(self, attrs):
-        email = attrs.get('email')
-        try:
-            if email:
-                user = UserModel.objects.get(email=email)
-            raise ValidationError({"message":"the email filed is requerd."})
-        except UserModel.DoesNotExist:
-            raise ValidationError({"message":"User with this email does not exist,please review your email and try again!"})
+        email = attrs.get("email")
+        if not email:
+            raise ValidationError({"message":"The email field is required."})
+        if not UserModel.objects.filter(email=email).exists():
+            raise ValidationError({"message":"User with this email does not exist,please review your email and try agine."})
         return attrs
+    
     def validate_email(self, value):
         try:
             user = UserModel.objects.get(email=value)
@@ -303,7 +311,6 @@ class PasswordResetConfirmSerializer(serializers.Serializer):
     new_password = serializers.CharField(write_only=True)
 
     def validate(self, data):
-        # الحصول على uidb64 وtoken من السياق
         uidb64 = self.context.get("uidb64")
         token = self.context.get("token")
 
