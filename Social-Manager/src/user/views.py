@@ -2,11 +2,12 @@ from rest_framework import viewsets, status,generics ,decorators
 from rest_framework.response import Response
 from .model_role import Role    
 from rest_framework.authtoken.models import Token 
-from .permissions import EmailVerifiedPermission , IsOwner ,ISManager, HasPermissionEmployee ,HasPermissionEmployeeToAccess
+from core.permission.permissions import EmailVerifiedPermission , IsOwner ,ISManager, HasPermissionEmployee ,HasPermissionEmployeeToAccess
 from .models import UserModel
 from .serializers import EmpManagerSerializer, UserSerializer, LoginSerializer ,Roleserializers  
 from rest_framework.authentication import TokenAuthentication
-from .services import  get_user_from_token, send_massage_email
+from core.services.get_user_from_token import  get_user_from_token
+from core.services.send_email_message import send_email_message
 from django.shortcuts import get_object_or_404
 from django.utils.http import urlsafe_base64_decode
 from django.contrib.auth.tokens import default_token_generator
@@ -47,7 +48,7 @@ class AuthViewSet(viewsets.ViewSet):
         if serializer.is_valid():
             user = serializer.save()
             token, created = Token.objects.get_or_create(user=user)
-            send_massage_email(user=user,reverse_viewname='verify_email',title='Verify your email address',content="Please verify your email by clicking the link")
+            send_email_message(user=user,reverse_viewname='verify_email',title='Verify your email address',content="Please verify your email by clicking the link")
             response = {
                 "message":"Please verify your email by clicking the link below"
             }
@@ -142,7 +143,7 @@ class EmpUserViewSet(viewsets.ViewSet):
         if serializer.is_valid():
             user = serializer.save()
             token, created = Token.objects.get_or_create(user=user)
-            send_massage_email(user=user,reverse_viewname='verify_email',title='Verify your email',content="Please verify your email by clicking the link")
+            send_email_message(user=user,reverse_viewname='verify_email',title='Verify your email',content="Please verify your email by clicking the link")
             response = {
                 "message":"please verify your email by clicking the link below",
                 "data":serializer.data

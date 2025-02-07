@@ -7,7 +7,7 @@ from django.contrib.auth import get_user_model
 from django.conf import settings
 from rest_framework.authtoken.models import Token 
 from .model_role import Role , RolePermission ,Permission as PermissionModle
-from .services import get_user_from_token, send_massage_email
+from core.services import  send_email_message
 from rest_framework.exceptions import ValidationError
 from django.urls import reverse
 from .models import UserModel
@@ -301,7 +301,7 @@ class PasswordResetSerializer(serializers.Serializer):
         try:
             email = self.validated_data['email']
             user = UserModel.objects.get(email=email)
-            send_massage_email(user=user,reverse_viewname="password_reset_confirm",title='Reset your password',content="Click the link to reset your password:")
+            send_email_message(user=user,reverse_viewname="password_reset_confirm",title='Reset your password',content="Click the link to reset your password:")
             print(f"user:{user}")
         except (TypeError) as e:
             raise  "from userserlaizer have erorr ditels: {e}"

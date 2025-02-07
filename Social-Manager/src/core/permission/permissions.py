@@ -1,15 +1,13 @@
 from rest_framework import permissions
-from .services import get_user_from_token
+from core.services import get_user_from_token
 from django.shortcuts import get_object_or_404
-from .models import UserModel 
-from .model_role import Role 
+from user.models import UserModel 
+from user.model_role import Role 
 
 
 class IsOwner(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
         return obj.owner == request.user  
-
-
 
 class EmailVerifiedPermission(permissions.BasePermission):
 
@@ -17,7 +15,6 @@ class EmailVerifiedPermission(permissions.BasePermission):
         if request.user.is_authenticated and request.user.email_verified:
             return  True 
         return False
-
 
 class ISManager(permissions.BasePermission):
     message = "You do not have permission to access this page."
@@ -39,6 +36,7 @@ class ISManager(permissions.BasePermission):
         except AttributeError:  
             print("AttributeError: user_info might not have role attribute")
             return False
+
 class HasPermissionEmployee(permissions.BasePermission):
     message = "You don't have the permission to perform this operation."
 
@@ -60,10 +58,15 @@ class HasPermissionEmployee(permissions.BasePermission):
         except AttributeError:  
             print("AttributeError: user_info might not have role attribute")
             return False
+
 class HasPermissionEmployeeToAccess(permissions.BasePermission):
+
+
     message = "You don't have the permission to access to this employee."
 
     def has_permission(self, request, view):
+
+
         print("has_permission")
         manager = get_user_from_token(request)
         if manager is None: 
@@ -85,5 +88,8 @@ class HasPermissionEmployeeToAccess(permissions.BasePermission):
                 print("Permission Denied: Role mismatch")
                 return False
         except AttributeError as e:  
+
             print(fr"AttributeError: manager might not have role attribute {e}")
             return False
+
+ 

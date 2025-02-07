@@ -1,6 +1,8 @@
 from django.db import models
 from user.models import UserModel
 
+
+
 class Platform(models.Model):
     name = models.CharField(max_length=50, unique=True)
     base_url = models.URLField()  
