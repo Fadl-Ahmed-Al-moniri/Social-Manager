@@ -1,0 +1,471 @@
+"""
+    Model classes for instagram business.
+"""
+
+from dataclasses import dataclass
+from typing import List, Optional, Union
+
+from dataclasses_json import config
+
+from pyfacebook.models.base import BaseModel, field
+from pyfacebook.models.extensions import Paging
+
+
+@dataclass
+class IgBusUser(BaseModel):
+    """
+    A class representing the Business User.
+
+    Refer: https://developers.facebook.com/docs/instagram-api/reference/ig-user/
+    """
+
+    id: Optional[str] = field(repr=True, compare=True)
+    ig_id: Optional[str] = field()
+    biography: Optional[str] = field()
+    followers_count: Optional[int] = field()
+    follows_count: Optional[int] = field()
+    media_count: Optional[int] = field()
+    name: Optional[str] = field()
+    profile_picture_url: Optional[str] = field()
+    shopping_product_tag_eligibility: Optional[bool] = field()
+    username: Optional[str] = field(repr=True)
+    website: Optional[str] = field()
+
+
+@dataclass
+class IgBusMediaChild(BaseModel):
+    """
+    A class representing the child for media children.
+    """
+
+    id: Optional[str] = field(repr=True, compare=True)
+    ig_id: Optional[str] = field()
+    media_type: Optional[str] = field()
+    media_url: Optional[str] = field(repr=True)
+    owner: Optional[IgBusUser] = field()
+    permalink: Optional[str] = field()
+    shortcode: Optional[str] = field()
+    thumbnail_url: Optional[str] = field()
+    timestamp: Optional[str] = field()
+    username: Optional[str] = field()
+
+
+@dataclass
+class IgBusMediaChildren(BaseModel):
+    """
+    A class representing the Children for the media.
+
+    Refer: https://developers.facebook.com/docs/instagram-api/reference/ig-media/children
+    """
+
+    data: Optional[List[IgBusMediaChild]] = field()
+
+
+@dataclass
+class IgBusMedia(BaseModel):
+    """
+    A class representing the Business Media.
+
+    Refer: https://developers.facebook.com/docs/instagram-api/reference/ig-media/
+    """
+
+    id: Optional[str] = field(repr=True, compare=True)
+    ig_id: Optional[str] = field()
+    caption: Optional[str] = field()
+    children: Optional[IgBusMediaChildren] = field()
+    comments_count: Optional[int] = field()
+    is_comment_enabled: Optional[bool] = field()
+    is_shared_to_feed: Optional[bool] = field()
+    like_count: Optional[int] = field()
+    media_product_type: Optional[str] = field()
+    media_type: Optional[str] = field()
+    media_url: Optional[str] = field(repr=True)
+    owner: Optional[IgBusUser] = field()
+    permalink: Optional[str] = field()
+    shortcode: Optional[str] = field()
+    thumbnail_url: Optional[str] = field()
+    timestamp: Optional[str] = field()
+    username: Optional[str] = field()
+    # TODO Starting with v14.0, the video_title field will no longer be supported
+    video_title: Optional[str] = field()
+
+
+@dataclass
+class IgBusMediaResponse(BaseModel):
+    """
+    A class representing the Business Medias response.
+
+    Refer: https://developers.facebook.com/docs/instagram-api/reference/ig-user/media
+    """
+
+    data: List[IgBusMedia] = field(repr=True, compare=True)
+    paging: Optional[Paging] = field(repr=True)
+
+
+@dataclass
+class IgBusReply(BaseModel):
+    """
+    A class representing the Reply.
+    Like a Comment.
+    """
+
+    id: Optional[str] = field(repr=True, compare=True)
+    like_count: Optional[int] = field()
+    media: Optional[IgBusMedia] = field()
+    text: Optional[str] = field(repr=True)
+    timestamp: Optional[str] = field()
+    user: Optional[IgBusUser] = field()
+    username: Optional[str] = field()
+    _from: Optional[IgBusUser] = field(metadata=config(field_name="from"))
+
+
+@dataclass
+class IgBusReplies(BaseModel):
+    """
+    A class representing the Replies for comment.
+
+    Refer: https://developers.facebook.com/docs/instagram-api/reference/ig-comment/replies
+    """
+
+    data: Optional[List[IgBusReply]] = field()
+
+
+@dataclass
+class IgBusComment(IgBusReply):
+    """
+    A class representing the Business Comment.
+
+    Refer: https://developers.facebook.com/docs/instagram-api/reference/ig-comment/
+    """
+
+    replies: Optional[IgBusReplies] = field()
+
+
+@dataclass
+class IgBusCommentResponse(BaseModel):
+    """
+    A class representing the comments response.
+
+    Refer: https://developers.facebook.com/docs/instagram-api/reference/ig-media/comments
+    """
+
+    data: List[IgBusComment] = field(repr=True)
+    paging: Optional[Paging] = field(repr=True)
+
+
+@dataclass
+class IgBusHashtag(BaseModel):
+    """
+    A class representing the hashtag.
+
+    Refer: https://developers.facebook.com/docs/instagram-api/reference/ig-hashtag/
+    """
+
+    id: Optional[str] = field(repr=True, compare=True)
+    name: Optional[str] = field(repr=True)
+
+
+@dataclass
+class IgBusContainer(BaseModel):
+    """
+    A class representing the media container.
+
+    Refer: https://developers.facebook.com/docs/instagram-api/reference/ig-container
+    """
+
+    id: Optional[str] = field(repr=True, compare=True)
+    status: Optional[str] = field()
+    status_code: Optional[str] = field()
+
+
+@dataclass
+class IgBusPublishLimitConfig(BaseModel):
+    """
+    A class representing the content publish limit config.
+    """
+
+    quota_total: Optional[int] = field(repr=True)
+    quota_duration: Optional[int] = field()
+
+
+@dataclass
+class IgBusPublishLimit(BaseModel):
+    """
+    A class representing the content publish limit.
+
+    Refer: https://developers.facebook.com/docs/instagram-api/reference/ig-user/content_publishing_limit
+    """
+
+    config: Optional[IgBusPublishLimitConfig] = field(repr=True)
+    quota_usage: Optional[int] = field(repr=True)
+
+
+@dataclass
+class IgBusPublishLimitResponse(BaseModel):
+    """
+    A class representing the content publish limit response.
+
+    Refer: https://developers.facebook.com/docs/instagram-api/reference/ig-user/content_publishing_limit
+    """
+
+    data: List[IgBusPublishLimit] = field(repr=True)
+
+
+@dataclass
+class IgBusInsightValue(BaseModel):
+    """
+    A class representing the Instagram insight value info.
+
+    Refer: https://developers.facebook.com/docs/instagram-api/reference/ig-user/insights
+    """
+
+    value: Optional[Union[int, dict]] = field(repr=True)
+    end_time: Optional[str] = field(repr=True)
+
+
+@dataclass
+class IgBusInsightTotalValueBreakdownResult(BaseModel):
+    """
+    A class representing the Instagram insight total value breakdown result info.
+
+    Refer: https://developers.facebook.com/docs/instagram-api/reference/ig-user/insights#--------
+    """
+
+    dimension_values: Optional[List[str]] = field(repr=True)
+    value: Optional[int] = field(repr=True)
+
+
+@dataclass
+class IgBusInsightTotalValueBreakdown(BaseModel):
+    """
+    A class representing the Instagram insight total value breakdown info.
+
+    Refer: https://developers.facebook.com/docs/instagram-api/reference/ig-user/insights#--------
+    """
+
+    dimension_keys: Optional[List[str]] = field(repr=True)
+    results: Optional[List[IgBusInsightTotalValueBreakdownResult]] = field()
+
+
+@dataclass
+class IgBusInsightTotalValue(BaseModel):
+    """
+    A class representing the Instagram insight total value info.
+
+    Refer: https://developers.facebook.com/docs/instagram-api/reference/ig-user/insights#--------
+    """
+
+    value: Optional[int] = field(repr=True)
+    breakdowns: Optional[List[IgBusInsightTotalValueBreakdown]] = field()
+
+
+@dataclass
+class IgBusInsight(BaseModel):
+    """
+    A class representing the Instagram insight.
+
+    Refer: https://developers.facebook.com/docs/instagram-api/reference/ig-user/insights
+    """
+
+    id: Optional[str] = field()
+    name: Optional[str] = field(repr=True)
+    period: Optional[str] = field(repr=True)
+    title: Optional[str] = field()
+    description: Optional[str] = field()
+    values: Optional[List[IgBusInsightValue]] = field()
+    total_value: Optional[IgBusInsightTotalValue] = field()
+
+
+@dataclass
+class IgBusInsightsResponse(BaseModel):
+    """
+    A class representing the Instagram insights response.
+
+    Refer: https://developers.facebook.com/docs/instagram-api/reference/ig-user/insights
+    """
+
+    data: List[IgBusInsight] = field(repr=True)
+    paging: Optional[Paging] = field()
+
+
+@dataclass
+class IgBusDiscoveryUserResponse(BaseModel):
+    """
+    A class representing the response for discovery user.
+
+    Refer: https://developers.facebook.com/docs/instagram-api/reference/ig-user/business_discovery#sample-response
+    """
+
+    business_discovery: Optional[IgBusUser] = field(repr=True)
+    id: Optional[str] = field(repr=True)
+
+
+@dataclass
+class IgBusDiscoveryUserMedia(BaseModel):
+    media: Optional[IgBusMediaResponse] = field(repr=True)
+    id: Optional[str] = field()
+
+
+@dataclass
+class IgBusDiscoveryUserMediaResponse(BaseModel):
+    """
+    A class representing the response for discovery user.
+
+    Refer: https://developers.facebook.com/docs/instagram-api/reference/ig-user/business_discovery#sample-response
+    """
+
+    business_discovery: Optional[IgBusDiscoveryUserMedia] = field(repr=True)
+    id: Optional[str] = field(repr=True)
+
+
+@dataclass
+class IgBusMentionedCommentResponse(BaseModel):
+    """
+    A class representing the response for mentioned comment.
+
+    Refer: https://developers.facebook.com/docs/instagram-api/reference/ig-user/mentioned_comment
+    """
+
+    mentioned_comment: Optional[IgBusReply] = field(repr=True)
+    id: Optional[str] = field(repr=True)
+
+
+@dataclass
+class IgBusMentionedMediaResponse(BaseModel):
+    """
+    A class representing the response for mentioned media.
+
+    Refer: https://developers.facebook.com/docs/instagram-api/reference/ig-user/mentioned_media
+    """
+
+    mentioned_media: Optional[IgBusMedia] = field(repr=True)
+    id: Optional[str] = field(repr=True)
+
+
+@dataclass
+class IgBusHashtagsResponse(BaseModel):
+    """
+    A class representing the hashtag.
+
+    Refer: https://developers.facebook.com/docs/instagram-api/reference/ig-user/recently_searched_hashtags
+    """
+
+    data: List[IgBusHashtag] = field(repr=True)
+    paging: Optional[Paging] = field(repr=True)
+
+
+@dataclass
+class IgBusCatalog(BaseModel):
+    """
+    A class representing the catalog.
+
+    Refer: https://developers.facebook.com/docs/instagram-api/reference/ig-user/available_catalogs
+    """
+
+    catalog_id: Optional[str] = field(repr=True)
+    catalog_name: Optional[str] = field(repr=True)
+    shop_name: Optional[str] = field(repr=True)
+    product_count: Optional[int] = field(repr=True)
+
+
+@dataclass
+class IgBusCatalogsResponse(BaseModel):
+    """
+    A class representing the catalog list response.
+
+    Refer: https://developers.facebook.com/docs/instagram-api/reference/ig-user/available_catalogs
+    """
+
+    data: List[IgBusCatalog] = field(repr=True)
+
+
+@dataclass
+class IgBusProductVariant(BaseModel):
+    product_id: Optional[int] = field(repr=True)
+    variant_name: Optional[str] = field(repr=True)
+
+
+@dataclass
+class IgBusProduct(BaseModel):
+    """
+    A class representing the catalog product.
+
+    Refer: https://developers.facebook.com/docs/instagram-api/reference/ig-user/catalog_product_search
+    """
+
+    product_id: Optional[int] = field(repr=True)
+    merchant_id: Optional[int] = field(repr=True)
+    product_name: Optional[str] = field(repr=True)
+    image_url: Optional[str] = field()
+    retailer_id: Optional[str] = field()
+    review_status: Optional[str] = field()
+    is_checkout_flow: Optional[bool] = field()
+    product_variants: Optional[List[IgBusProductVariant]] = field()
+
+
+@dataclass
+class IgBusProductsResponse(BaseModel):
+    """
+    A class representing the catalog product list response.
+
+    Refer: https://developers.facebook.com/docs/instagram-api/reference/ig-user/catalog_product_search
+    """
+
+    data: List[IgBusProduct] = field(repr=True)
+    paging: Optional[Paging] = field(repr=True)
+
+
+@dataclass
+class IgBusProductTag(BaseModel):
+    """
+    A class representing the product tag.
+
+    Refer: https://developers.facebook.com/docs/instagram-api/reference/ig-media/product_tags#ig-media-product-tags
+    """
+
+    product_id: Optional[int] = field(repr=True)
+    merchant_id: Optional[int] = field(repr=True)
+    name: Optional[str] = field(repr=True)
+    price_string: Optional[str] = field()
+    image_url: Optional[str] = field()
+    review_status: Optional[str] = field()
+    is_checkout: Optional[bool] = field()
+    stripped_price_string: Optional[str] = field()
+    string_sale_price_string: Optional[str] = field()
+    x: Optional[float] = field()
+    y: Optional[float] = field()
+
+
+@dataclass
+class IgBusProductTagsResponse(BaseModel):
+    """
+    A class representing the product tag list response.
+
+    Refer: https://developers.facebook.com/docs/instagram-api/reference/ig-media/product_tags#ig-media-product-tags
+    """
+
+    data: List[IgBusProductTag] = field(repr=True)
+
+
+@dataclass
+class IgBusProductAppeal(BaseModel):
+    """
+    A class representing the product appeal.
+
+    Refer: https://developers.facebook.com/docs/instagram-api/reference/ig-user/product_appeal
+    """
+
+    eligible_for_appeal: Optional[bool] = field(repr=True)
+    product_id: Optional[int] = field(repr=True)
+    review_status: Optional[str] = field(repr=True)
+
+
+@dataclass
+class IgBusProductAppealsResponse(BaseModel):
+    """
+    A class representing the product appeal list
+
+    Refer: https://developers.facebook.com/docs/instagram-api/reference/ig-user/product_appeal#response-2
+    """
+
+    data: List[IgBusProductAppeal] = field(repr=True)
