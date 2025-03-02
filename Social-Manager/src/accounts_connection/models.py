@@ -26,7 +26,7 @@ class SocialMediaAccount(models.Model):
         unique_together = ('platform', 'external_account_id')  
         
     def __str__(self):
-        return f"{self.user.username} - {self.platform.name}"
+        return f"{self.pk}"
 
 
 

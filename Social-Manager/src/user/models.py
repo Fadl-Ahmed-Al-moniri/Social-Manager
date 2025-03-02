@@ -24,7 +24,6 @@ class UserModel(AbstractBaseUser, PermissionsMixin):
     def get_default_role():
         return Role.objects.get(name= "Social Media Owner").pk
 
-
     username = models.CharField(max_length=255,)
     email = models.EmailField(unique=True)
     is_active = models.BooleanField(default=True)

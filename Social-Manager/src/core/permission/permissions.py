@@ -25,7 +25,7 @@ class EmailVerifiedPermission(permissions.BasePermission):
 
     def has_permission(self, request, view):
         if request.user.is_authenticated and request.user.email_verified:
-            print("has_permission")
+            print(fr"has_permission     {request.user.email_verified}")
             return  True 
         return False
 

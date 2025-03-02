@@ -74,7 +74,6 @@ class UserSerializer(serializers.ModelSerializer):
 class LoginSerializer(serializers.Serializer):
     email = serializers.EmailField()
     password = serializers.CharField(write_only=True)
-
     def validate(self, attrs):
         email = attrs.get('email')
         password = attrs.get('password')

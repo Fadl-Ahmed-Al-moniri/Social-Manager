@@ -21,17 +21,8 @@ class AuthViewSet(viewsets.ViewSet):
     second operation is SingUP .
     """
 
-    authentication_classes = [TokenAuthentication]
 
-    permission_classes_by_action = {
-        'login': [EmailVerifiedPermission],
-    }
-    def get_permissions(self):
-        try:
-            return [permission() for permission in self.permission_classes_by_action[self.action]]
-        except KeyError:
-            return [permission() for permission in self.permission_classes]
-
+    @decorators.permission_classes([EmailVerifiedPermission])
     @decorators.action(detail=False, methods=["post"])
     def login(self, request):
         try:
@@ -43,6 +34,7 @@ class AuthViewSet(viewsets.ViewSet):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         except   PermissionError as e:
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        
     def create(self, request):
         serializer = UserSerializer(data=request.data)
         if serializer.is_valid():
