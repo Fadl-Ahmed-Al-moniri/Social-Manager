@@ -1,9 +1,8 @@
 from rest_framework import viewsets, status,generics ,decorators
 from rest_framework.response import Response
-from .model_role import Role    
 from rest_framework.authtoken.models import Token 
 from core.permission.permissions import EmailVerifiedPermission , IsOwner ,ISManager, HasPermissionEmployee ,HasPermissionEmployeeToAccess
-from .models import UserModel
+from .models import UserModel , Role
 from .serializers import EmpManagerSerializer, UserSerializer, LoginSerializer ,Roleserializers  
 from rest_framework.authentication import TokenAuthentication
 from core.services.get_user_from_token import  get_user_from_token

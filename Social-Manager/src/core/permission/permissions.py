@@ -1,8 +1,7 @@
 from rest_framework import permissions
 from core.services.get_user_from_token import get_user_from_token
 from django.shortcuts import get_object_or_404
-from user.models import UserModel 
-from user.model_role import Role 
+from user.models import UserModel ,  Role
 from rest_framework.exceptions import PermissionDenied
 
 

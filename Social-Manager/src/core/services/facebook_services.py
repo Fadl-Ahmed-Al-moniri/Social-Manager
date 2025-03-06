@@ -43,16 +43,14 @@ class FacebookService:
         """
         try:
             api = GraphAPI(access_token=user_access_token)
-            pages_data = api.get_connection(
+            pages_data = api.get_object(
                 object_id="me",
-                connection="accounts",
-                fields="id,name,access_token,followers_count"
+                fields=r"accounts{id,name,global_brand_page_name,picture{url},access_token,category,followers_count,fan_count,tasks}"
             )
             return pages_data
         except Exception as e:
             raise ValueError(f"Error fetching pages data: {e}")
         
-
     @staticmethod
     def fetch_facebook_user_info(user_access_token,facebook_user_id ):
         """
@@ -62,7 +60,7 @@ class FacebookService:
             api = GraphAPI(access_token=user_access_token, )
             data = api.get_object(
                 object_id="me",
-                fields=r"id,name,picture{url},accounts{id,name,global_brand_page_name,picture{url},access_token,category,followers_count,fan_count,tasks}"
+                fields=r"id,name,picture{url},accounts{id,name,global_brand_page_name,picture{url}}"
             )
             return data
         except Exception as e:

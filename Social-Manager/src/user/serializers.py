@@ -6,11 +6,11 @@ from django.core.mail import send_mail
 from django.contrib.auth import get_user_model
 from django.conf import settings
 from rest_framework.authtoken.models import Token 
-from .model_role import Role , RolePermission ,Permission as PermissionModle
+# from .model_role import 
 from core.services.send_email_message import  send_email_message
 from rest_framework.exceptions import ValidationError
 from django.urls import reverse
-from .models import UserModel
+from .models import UserModel ,Role , RolePermission ,Permission as PermissionModle
 from django.shortcuts import get_object_or_404
 
 

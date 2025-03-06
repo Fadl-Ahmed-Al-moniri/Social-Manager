@@ -10,7 +10,7 @@ class FacebookUserAdmin(admin.ModelAdmin):
     list_filter = ['facebook_user_name','facebook_user_email','facebook_user_access_token']
 
 class FacebookPageAdmin(admin.ModelAdmin):
-    list_display = [ 'social_media_account', 'facebook_user', 'facebook_page_id','facebook_page_name','facebook_page_access_token' ]
+    list_display = ['id', 'social_media_account', 'facebook_user', 'facebook_page_id','facebook_page_name','facebook_page_access_token' ]
     list_filter = ['facebook_user','facebook_page_name','facebook_page_access_token']
 
 class InstagramAdmin(admin.ModelAdmin):

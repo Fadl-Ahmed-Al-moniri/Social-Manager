@@ -23,8 +23,10 @@ class SocialMediaAccount(models.Model):
     external_account_id = models.CharField(max_length=255, blank=True, null=True,)
     
     class Meta:
-        unique_together = ('platform', 'external_account_id')  
-        
+        verbose_name = "SocialMediaAccount"
+        verbose_name_plural = "SocialMediaAccounts"
+
+
     def __str__(self):
         return f"{self.pk}"
 
